@@ -23,9 +23,24 @@ plot3d(u[,1],u[,2],u[,3],pch=20,col='navyblue')
 
 x1 <- qgamma(u[,1],shape=2,scale=1)
 x2 <- qbeta(u[,2],2,2)
-x3 <- qt(u[,3],df=5)
+x3 <- qbinom(u[,3],1,0.25)
+#x3 <- qt(u[,3],df=5)
 plot3d(x1,x2,x3,pch=20,col='blue')
 
 df <- cbind(x1,x2,x3)
 pairs.panels(df)
 cor(df,meth='spearman')
+
+#####using copula package#####
+library(copula)
+set.seed(100)
+myCop <- normalCopula(param=c(0.4,0.2,-0.8), dim = 3, dispstr = "un")
+myMvd <- mvdc(copula=myCop, margins=c("gamma", "beta", "binom"),
+              paramMargins=list(list(shape=2, scale=1),
+                                list(shape1=2, shape2=2), 
+                                list(size = 1, prob = 0.25)) )
+
+
+Z2 <- rMvdc(2000, myMvd)
+colnames(Z2) <- c("x1", "x2", "x3")
+pairs.panels(Z2)

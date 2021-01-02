@@ -90,8 +90,8 @@ covm
 
 # 1. Draw any number of variables from a joint normal distribution.
 z <- as.data.frame(mvrnorm(10000, mu = c(mean_a,mean_b,mean_c,mean_d,mean_e,mean_f), 
-                             Sigma =covm, 
-                             empirical = TRUE))
+                           Sigma =covm, 
+                           empirical = TRUE))
 
 library(psych)
 round(cor(z,method='spearman'),2)
@@ -157,53 +157,3 @@ lower
 
 pairs.panels(df3)
 
-
-
-
-
-
-
-
-
-
-
-
-##### Simulate dataset using copula package #####
-
-# https://datascienceplus.com/modelling-dependence-with-copulas/
-# https://www.stat.ncsu.edu/people/bloomfield/courses/st810j/slides/copula.pdf
-# for copulas to work we must use continuous distributions
-# for now we are also using discrete distribution (binomial) which gives some correlation but not what we specified
-# In order to make it work like we want to we should use a continuous distribution for the categorical variables
-# which have the correlations we want, then bin into the categories we want
-
-library(copula)
-set.seed(100)
-myCop <- normalCopula(param=c(0.6,0.0,0.3,0.7,0.9,0.7,-0.2, #age
-                              -0.4,0.1,0.2,0.3,0.7,-0.8, #sa
-                              0.1,0.1,0.0,-0.9,0.9, #gender
-                              0.05,0.35,-0.9,-0.2, #marital
-                              0.2,-0.8,0.95, #claim
-                              0.05,-0.9, # yrs since joining scheme
-                              -0.9), #occ class
-                      dim = 8, dispstr = "un")
-myMvd <- mvdc(copula=myCop, margins=c("gamma", "lnorm", "binom", "binom","binom","lnorm","binom","binom"),
-              paramMargins=list(list(shape=50, scale=0.8),
-                                list(meanlog=11,sdlog=0.7), 
-                                list(size = 1, prob = 0.6), # % male
-                                list(size = 1, prob = 0.2), # % married
-                                list(size = 1, prob = 0.15), # % claims
-                                list(meanlog=1,sdlog=0.4),
-                                list(size = 1, prob = 0.3), #% white collar
-                                list(size = 1, prob = 0.7))) # % in location 1 (distribution center)
-Z2 <- rMvdc(10000, myMvd)
-colnames(Z2) <- c("age", "sum.assured", "gender","marital.status","claim.lastyr",
-                  "yrs.IF","occ.class","location")
-mcor<-round(cor(Z2),2)
-
-lower<-mcor
-lower[lower.tri(mcor)]<-""
-lower<-as.data.frame(lower)
-lower
-
-pairs.panels(Z2)

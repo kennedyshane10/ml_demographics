@@ -15,7 +15,7 @@ cov(rawvars); cor(rawvars)
 # We can see our normal sample produces results very similar to our 
 #specified covariance levels.
 
-# No lets transform some variables
+# Now lets transform some variables
 pvars <- pnorm(rawvars)
 
 # Through this process we already have 
@@ -45,7 +45,7 @@ plot(poisvars,rawvars, main="Poisson Transformation Against Normal Values")
 binomvars <- qpois(1-pvars, 3, .25) 
 # Note, I did 1-p because p is defined differently for the qpois for some 
 #reason
-cor(binomvars, rawvars) 
+cor(binomvars, rawvars) # this is the correlation between binomial and normal variables
 
 # Or the exponential distribution
 expvars <- qexp(pvars)
