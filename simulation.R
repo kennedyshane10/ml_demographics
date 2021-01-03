@@ -1,28 +1,20 @@
-##### Group Disability portfolio details #####
+##### Group Risk Scheme #####
 
-# Disability definitions may be own or any occupation, multiple of salary or fixed sum assured, 
-# may include coverage for dependents, some schemes optional some compulsory
+# Scenario:
+# Scheme is currently insured for Death only benefit = 2 x Salary
+# Just one year's worth of claims experience available
+# Last years membership details and claims (anonymised) is provided
+# Data is limited to Age, Sum Assured, Salary, Gender, Occupation and Work Location - check what we can have under GDPR
+# We wish to perform some experience analysis utilizing ML techniques
+# Results can be used to supplement pricing and reserving mortality rates
 
-# Separate rate tables for above (e.g. own/any occ) but one ML model can be fitted for both
+#Steps:
+# 1. Simulate Dataset
+# 2. What is it that we want to achieve? Prediction, Inference, ...?
+# 3. Perform Exploratory Analysis - understand the dataset
+# 4. 
 
-# 1 year annually renewable
-
-# Variables include scheme optional or compulsory, age, gender, occupation scale 1 - blue or white collar, salary, sum assured, 
-# years since joining scheme, years since joining company, work location, legal entity, previous claim y or n, 
-# smoker status, dependents y or n, marital status, underwriting performed (health q), 
-# underwriting loading applied
-
-#Categorical:
-# Optional or compulsory, gender, work location - two locations, legal entity, previous claim, smoker status,
-# dependents, marital status, u/w performed
-#Ordinal:
-# occupation scale 1-4
-#Numerical:
-#age, salary, sum assured, years since joining scheme, years since joining company, u/w loading applied
-
-# Number of observations around 100k lives, around 5 years claims history
-
-##### Simulate dataset using other method - allows categorical variables #####
+##### Simulate dataset #####
 
 # https://www.r-bloggers.com/2020/09/how-to-convert-continuous-variables-into-categorical-by-creating-bins/
 # http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html?m=1
@@ -42,7 +34,7 @@ set.seed(180)
 # e = claim last year
 # f = work location
 
-no.records<-50000
+no.records<-10000
 
 adj=1
 
@@ -134,7 +126,8 @@ x1<-pvars.V1
 age <- qgamma(pvars.V1,shape=50,scale=0.8)
 
 x2<-pvars.V2
-sum.assured <- qlnorm(pvars.V2,meanlog=11,sdlog=0.7)
+sum.assured <- round(qlnorm(pvars.V2,meanlog=11,sdlog=0.7),-3)
+salary <- sum.assured/2 # sum assured is a multiple of salary 
 
 #binning normal distribution into categorical variables so not applying inverse to these
 x3 <- pvars.V3
@@ -162,23 +155,23 @@ df<-df%>%mutate(occ=ifelse(df$occ =='(0,0.2]',1,
                               
                                   12))))))))))))
 
-df<-df%>%mutate(claim=ifelse(df$x5 <=0.9,0,1)) #just two bins, no claim last year is 0 / yes is 1
+df<-df%>%mutate(claim=ifelse(df$x5 <=(1-0.002),0,1)) #just two bins, no claim last year is 0 / yes is 1
 
 # cumulative probabilities for each bin - three bins here
 df<-df%>%mutate(location=cut(df$x6, breaks = c(0,0.15,0.65,1)))
 df<-df%>%mutate(location=ifelse(df$location =='(0,0.15]',1,ifelse(df$location =='(0.15,0.65]',2,3)))
 
-df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,df$x3,df$gender,df$x4,df$occ,df$x5,df$claim,df$x6,df$location))%>%
+df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,salary,df$x3,df$gender,df$x4,df$occ,df$x5,df$claim,df$x6,df$location))%>%
   rename(x1=V1,
          x2=V3,
-         x3=V5,
-         gender=V6,
-         x4=V7,
-         occ=V8,
-         x5=V9,
-         claim=V10,
-         x6=V11,
-         location=V12)
+         x3=V6,
+         gender=V7,
+         x4=V8,
+         occ=V9,
+         x5=V10,
+         claim=V11,
+         x6=V12,
+         location=V13)
 
 mcor<-round(cor(df2),2)
 
@@ -192,7 +185,7 @@ lower
 # gender is based on x3 but it only has a correlation of 0.85 with x3 since it has two categories
 # occ class is based on x4 and has a correlation of 0.92 with x4 since it has three categories
 
-df3<-select(df2,age,sum.assured,gender,occ,claim,location)
+df3<-select(df2,age,sum.assured,salary,gender,occ,claim,location)
 
 mcor<-round(cor(df3),2)
 
@@ -229,6 +222,6 @@ df6<-df5%>%mutate(
     )
 )
 
-data.to.write<-select(df6,age,sum.assured,gender,occ.desc,location,claim)
+data.to.write<-select(df6,age,sum.assured,salary,gender,occ.desc,location,claim)
 
 write.csv(data.to.write,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
