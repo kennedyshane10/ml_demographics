@@ -28,6 +28,8 @@
 # http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html?m=1
 
 library(MASS)
+
+rm(list=ls())
 set.seed(100)
 
 cor_ab<-0.6
@@ -36,7 +38,7 @@ cor_ad<-0.1
 cor_ae<-0.8
 cor_af<-0.41
 cor_bc<--0.1
-cor_bd<--0.2
+cor_bd<--0.6
 cor_be<-0.3
 cor_bf<-0.13
 cor_cd<-0.4
@@ -118,7 +120,7 @@ x5 <- pvars.V5
 x6 <- pvars.V6
 df <- as.data.frame(cbind(x1,x2,x3,x4,x5,x6))
 
-df<-df%>%mutate(gender=ifelse(df$x3 <=0.6,0,1)) #just two bins
+df<-df%>%mutate(gender=ifelse(df$x3 <=0.6,1,0)) #just two bins, male is 0/ female is 1
 
 # cumulative probabilities for each bin - three bins here
 df<-df%>%mutate(occ.class=cut(df$x4, breaks = c(0,0.2,0.65,1)))
@@ -157,3 +159,4 @@ lower
 
 pairs.panels(df3)
 
+write.csv(df3,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
