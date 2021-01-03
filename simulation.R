@@ -38,9 +38,9 @@ set.seed(180)
 # a = age
 # b = sum.assured
 # c = gender
-# d = occ.class
+# d = occupation
 # e = claim last year
-# f = tbd
+# f = work location
 
 no.records<-50000
 
@@ -48,21 +48,21 @@ adj=1
 
 cor_ab<-0.6/adj   # age & sum.assured
 cor_ac<--0.3/adj  # age & gender
-cor_ad<-0.1/adj   # age & occ.class
+cor_ad<-0.1/adj   # age & occ
 cor_ae<-0.8/adj   # age & claim
 cor_af<--0.8/adj  # age & location
 
 cor_bc<--0.1/adj  # sum.assured & gender 
-cor_bd<--0.6/adj  # sum.assured & occ.class
+cor_bd<--0.6/adj  # sum.assured & occ
 cor_be<--0.3/adj  # sum.assured & claim
 cor_bf<--0.8/adj  # sum.assured & location
 
-cor_cd<-0.4/adj   # gender & occ.class
+cor_cd<-0.4/adj   # gender & occ
 cor_ce<--0.65/adj # gender & claim
 cor_cf<--0.8/adj  # gender & location
 
-cor_de<-0.46/adj  # occ.class & claim
-cor_df<-0.8/adj   # occ.class & location
+cor_de<-0.46/adj  # occ & claim
+cor_df<-0.8/adj   # occ & location
 
 cor_ef<-0.9/adj  # claim & location
 
@@ -143,25 +143,38 @@ x5 <- pvars.V5
 x6 <- pvars.V6
 df <- as.data.frame(cbind(x1,x2,x3,x4,x5,x6))
 
-df<-df%>%mutate(gender=ifelse(df$x3 <=0.4,0,1)) #just two bins, male is 0 / female is 1
+df<-df%>%mutate(gender=ifelse(df$x3 <=0.6,0,1)) #just two bins, male is 0 / female is 1
 
-# cumulative probabilities for each bin - three bins here
-df<-df%>%mutate(occ.class=cut(df$x4, breaks = c(0,0.2,0.65,1)))
-df<-df%>%mutate(occ.class=ifelse(df$occ.class =='(0,0.2]',1,ifelse(df$occ.class =='(0.2,0.65]',2,3)))
+# cumulative probabilities for each bin - 12 bins here
+df<-df%>%mutate(occ=cut(df$x4, breaks = c(0,0.2,0.25,0.3,0.35,0.4,0.5,0.6,0.65,0.72,0.75,0.77,1)))
+df<-df%>%mutate(occ=ifelse(df$occ =='(0,0.2]',1,
+                           ifelse(df$occ =='(0.2,0.25]',2,
+                                  ifelse(df$occ =='(0.25,0.3]',3,
+                                         ifelse(df$occ =='(0.3,0.35]',4,
+                                                ifelse(df$occ =='(0.35,0.4]',5,
+                                                       ifelse(df$occ =='(0.4,0.5]',6,
+                                                              ifelse(df$occ =='(0.5,0.6]',7,
+                                                                     ifelse(df$occ =='(0.6,0.65]',8,
+                                                                            ifelse(df$occ =='(0.65,0.72]',9,
+                                                                                   ifelse(df$occ =='(0.72,0.75]',10,
+                                                                                          ifelse(df$occ =='(0.75,0.77]',11,
+                            
+                              
+                                  12))))))))))))
 
-df<-df%>%mutate(claim=ifelse(df$x5 <=0.1,0,1)) #just two bins, no claim last year is 0 / yes is 1
+df<-df%>%mutate(claim=ifelse(df$x5 <=0.9,0,1)) #just two bins, no claim last year is 0 / yes is 1
 
 # cumulative probabilities for each bin - three bins here
 df<-df%>%mutate(location=cut(df$x6, breaks = c(0,0.15,0.65,1)))
 df<-df%>%mutate(location=ifelse(df$location =='(0,0.15]',1,ifelse(df$location =='(0.15,0.65]',2,3)))
 
-df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,df$x3,df$gender,df$x4,df$occ.class,df$x5,df$claim,df$x6,df$location))%>%
+df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,df$x3,df$gender,df$x4,df$occ,df$x5,df$claim,df$x6,df$location))%>%
   rename(x1=V1,
          x2=V3,
          x3=V5,
          gender=V6,
          x4=V7,
-         occ.class=V8,
+         occ=V8,
          x5=V9,
          claim=V10,
          x6=V11,
@@ -179,7 +192,7 @@ lower
 # gender is based on x3 but it only has a correlation of 0.85 with x3 since it has two categories
 # occ class is based on x4 and has a correlation of 0.92 with x4 since it has three categories
 
-df3<-select(df2,age,sum.assured,gender,occ.class,claim,location)
+df3<-select(df2,age,sum.assured,gender,occ,claim,location)
 
 mcor<-round(cor(df3),2)
 
@@ -188,4 +201,34 @@ lower[lower.tri(mcor)]<-""
 lower<-as.data.frame(lower)
 lower
 
-write.csv(df3,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
+# changing 1/0 indicators to more meaningful indicators
+df4<-df3%>%mutate(gender=ifelse(df3$gender ==0,"M","F"),
+                  location=ifelse(df3$location ==1,"site1",ifelse(df3$location ==2,"site2","site3")))
+
+df5<-df4%>%mutate(
+  occ.desc=case_when(
+    occ==1~"job1",
+    occ==2~"job2",
+    occ==3~"job3",
+    occ==4~"job4",
+    occ==5~"job5",
+    occ==6~"job6",
+    occ==7~"job7",
+    occ==8~"job8",
+    occ==9~"job9",
+    occ==10~"job10",
+    occ==11~"job11",
+    occ==12~"job12"
+  )
+)
+
+df6<-df5%>%mutate(
+  claim=case_when(
+    claim==0~"N",
+    claim==1~"Y"
+    )
+)
+
+data.to.write<-select(df6,age,sum.assured,gender,occ.desc,location,claim)
+
+write.csv(data.to.write,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
