@@ -28,25 +28,43 @@
 # http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html?m=1
 
 library(MASS)
+library(matrixcalc)
+library(dplyr)
+library(corpcor)
 
 rm(list=ls())
-set.seed(100)
+set.seed(180)
 
-cor_ab<-0.6
-cor_ac<-0.3
-cor_ad<-0.1
-cor_ae<-0.8
-cor_af<-0.41
-cor_bc<--0.1
-cor_bd<--0.6
-cor_be<-0.3
-cor_bf<-0.13
-cor_cd<-0.4
-cor_ce<-0.65
-cor_cf<-0.19
-cor_de<-0.46
-cor_df<-0.24
-cor_ef<-0.17
+# a = age
+# b = sum.assured
+# c = gender
+# d = occ.class
+# e = claim last year
+# f = tbd
+
+no.records<-50000
+
+adj=1
+
+cor_ab<-0.6/adj   # age & sum.assured
+cor_ac<--0.3/adj  # age & gender
+cor_ad<-0.1/adj   # age & occ.class
+cor_ae<-0.8/adj   # age & claim
+cor_af<--0.8/adj  # age & location
+
+cor_bc<--0.1/adj  # sum.assured & gender 
+cor_bd<--0.6/adj  # sum.assured & occ.class
+cor_be<--0.3/adj  # sum.assured & claim
+cor_bf<--0.8/adj  # sum.assured & location
+
+cor_cd<-0.4/adj   # gender & occ.class
+cor_ce<--0.65/adj # gender & claim
+cor_cf<--0.8/adj  # gender & location
+
+cor_de<-0.46/adj  # occ.class & claim
+cor_df<-0.8/adj   # occ.class & location
+
+cor_ef<-0.9/adj  # claim & location
 
 sdev_a<-1
 sdev_b<-1
@@ -88,11 +106,16 @@ covm<-cbind(c(sdev_a^2,cov_ab,cov_ac,cov_ad,cov_ae,cov_af),
             c(cov_ad,cov_bd,cov_cd,sdev_d^2,cov_de,cov_df),
             c(cov_ae,cov_be,cov_ce,cov_de,sdev_e^2,cov_ef),
             c(cov_af,cov_bf,cov_cf,cov_df,cov_ef,sdev_f^2))
-covm
+
+if (is.positive.definite(covm)==TRUE) {
+  covm_use=covm
+} else {
+  covm_use=make.positive.definite(covm)
+}
 
 # 1. Draw any number of variables from a joint normal distribution.
-z <- as.data.frame(mvrnorm(10000, mu = c(mean_a,mean_b,mean_c,mean_d,mean_e,mean_f), 
-                           Sigma =covm, 
+z <- as.data.frame(mvrnorm(no.records, mu = c(mean_a,mean_b,mean_c,mean_d,mean_e,mean_f), 
+                           Sigma=covm_use, 
                            empirical = TRUE))
 
 library(psych)
@@ -120,13 +143,19 @@ x5 <- pvars.V5
 x6 <- pvars.V6
 df <- as.data.frame(cbind(x1,x2,x3,x4,x5,x6))
 
-df<-df%>%mutate(gender=ifelse(df$x3 <=0.6,1,0)) #just two bins, male is 0/ female is 1
+df<-df%>%mutate(gender=ifelse(df$x3 <=0.4,0,1)) #just two bins, male is 0 / female is 1
 
 # cumulative probabilities for each bin - three bins here
 df<-df%>%mutate(occ.class=cut(df$x4, breaks = c(0,0.2,0.65,1)))
 df<-df%>%mutate(occ.class=ifelse(df$occ.class =='(0,0.2]',1,ifelse(df$occ.class =='(0.2,0.65]',2,3)))
 
-df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,df$x3,df$gender,df$x4,df$occ.class,df$x5,df$x6))%>%
+df<-df%>%mutate(claim=ifelse(df$x5 <=0.1,0,1)) #just two bins, no claim last year is 0 / yes is 1
+
+# cumulative probabilities for each bin - three bins here
+df<-df%>%mutate(location=cut(df$x6, breaks = c(0,0.15,0.65,1)))
+df<-df%>%mutate(location=ifelse(df$location =='(0,0.15]',1,ifelse(df$location =='(0.15,0.65]',2,3)))
+
+df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,df$x3,df$gender,df$x4,df$occ.class,df$x5,df$claim,df$x6,df$location))%>%
   rename(x1=V1,
          x2=V3,
          x3=V5,
@@ -134,7 +163,9 @@ df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,df$x3,df$gender,df$x4,df$oc
          x4=V7,
          occ.class=V8,
          x5=V9,
-         x6=V10)
+         claim=V10,
+         x6=V11,
+         location=V12)
 
 mcor<-round(cor(df2),2)
 
@@ -148,7 +179,7 @@ lower
 # gender is based on x3 but it only has a correlation of 0.85 with x3 since it has two categories
 # occ class is based on x4 and has a correlation of 0.92 with x4 since it has three categories
 
-df3<-select(df2,age,sum.assured,gender,occ.class)
+df3<-select(df2,age,sum.assured,gender,occ.class,claim,location)
 
 mcor<-round(cor(df3),2)
 
@@ -156,7 +187,5 @@ lower<-mcor
 lower[lower.tri(mcor)]<-""
 lower<-as.data.frame(lower)
 lower
-
-pairs.panels(df3)
 
 write.csv(df3,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
