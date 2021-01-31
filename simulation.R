@@ -222,6 +222,10 @@ df6<-df5%>%mutate(
     )
 )
 
-data.to.write<-select(df6,age,sum.assured,salary,gender,occ.desc,location,claim)
+#additional info to include having no correlation with other data
+#smoker status, marital status, employee identification number
+#
 
-write.csv(data.to.write,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
+#data.to.write<-select(df6,age,sum.assured,salary,gender,occ.desc,location,claim)
+
+write.csv(df6,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
