@@ -23,7 +23,7 @@ start_time=Sys.time()
 
 start_year<-2000 #start year - will simulate from this exposure year up until and including 2020
 seed_set=180
-no.records<-10000 #on start year
+no.records<-1000 #on start year
 annual_membership_growth_perc<-5 #percentage annual membership growth per year
 
 year<-start_year
