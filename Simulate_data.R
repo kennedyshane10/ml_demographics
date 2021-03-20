@@ -2,11 +2,11 @@
 
 # Scenario:
 # Scheme is currently insured for Death only benefit = 2 x Salary
-# Six year's worth of claims experience available (2015 to 2020 inclusive)
+# Historic claims experience available up to and including 2020
 # Membership details and claims history is provided
 # We wish to perform some experience analysis utilizing ML techniques
 # Results can be used to supplement pricing and reserving mortality assumptions
-# This script creates a synthetic dataset
+# This script creates a synthetic data set
 
 # https://www.r-bloggers.com/2020/09/how-to-convert-continuous-variables-into-categorical-by-creating-bins/
 # http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html?m=1
@@ -23,7 +23,7 @@ start_time=Sys.time()
 start_year<-2000 #start year - will simulate from this exposure year up until and including 2020
 seed_set=180
 no.records<-1000 #on start year
-annual_membership_growth_perc<-5 #percentage annual membership growth per year
+annual_membership_growth_perc<-15 #percentage annual membership growth per year
 claim_rate<- 50 #per thousand
 
 year<-start_year
