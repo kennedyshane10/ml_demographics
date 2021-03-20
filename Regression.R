@@ -14,15 +14,13 @@ library(glmnet)
 
 ##### Read in Data #####
 life_insurance_data<-data.table:: fread("C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/Life_Insurance_data.csv")
-life_insurance_data<-as_tibble(life_insurance_data)%>%
-  mutate(claim_indi=ifelse(claim=="N",0,1))
-life_insurance_data<-life_insurance_data[,-1]
+life_insurance_data<-as_tibble(life_insurance_data)#%>%
+  #mutate(claim_indi=ifelse(claim=="N",0,1))
+life_insurance_data<-life_insurance_data[,-c(1,6)]
 
-head(life_insurance_data)
-
-x=model.matrix(claim_indi ~.,life_insurance_data )
+x=model.matrix(claim ~.,life_insurance_data )
 # model.matrix automatically transforms qualitative variables into dummy variables
-y=life_insurance_data$claim_indi
+y=life_insurance_data$claim
 
 ##### Split data into training and test sets #####
 set.seed(297)
@@ -42,7 +40,7 @@ bestlam =cv.out$lambda.min
 bestlam
 
 # Fit ridge regression model on training data set using lambda chosen by cv and examine coefficients
-out=glmnet(x[train ,],y[ train],alpha=0,family="binomial")
+out=glmnet(x[train ,],y[ train],alpha=0,lambda=bestlam,family="binomial")
 # Examine coefficients
 predict(out,type="coefficients",s= bestlam) [1:20,]
 
@@ -56,4 +54,7 @@ plot(cv.out)
 bestlam =cv.out$lambda.min
 bestlam
 
-
+# Fit LASSO regression model on training data set using lambda chosen by cv and examine coefficients
+out=glmnet(x[train ,],y[ train],alpha=1,lambda=bestlam,family="binomial")
+# Examine coefficients
+predict(out,type="coefficients",s= bestlam)

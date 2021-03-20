@@ -8,7 +8,6 @@
 # Results can be used to supplement pricing and reserving mortality assumptions
 # This script creates a synthetic dataset
 
-# Useful links
 # https://www.r-bloggers.com/2020/09/how-to-convert-continuous-variables-into-categorical-by-creating-bins/
 # http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html?m=1
 
@@ -25,6 +24,7 @@ start_year<-2000 #start year - will simulate from this exposure year up until an
 seed_set=180
 no.records<-1000 #on start year
 annual_membership_growth_perc<-5 #percentage annual membership growth per year
+claim_rate<- 50 #per thousand
 
 year<-start_year
 datalist = list()
@@ -65,27 +65,27 @@ adj=1
 cor_ab<-0.6/adj   # age & sum.assured
 cor_ac<--0.3/adj  # age & gender
 cor_ad<-0.1/adj   # age & occ
-cor_ae<-0.8/adj   # age & claim
+cor_ae<-1/adj   # age & claim
 cor_af<--0.8/adj  # age & location
 cor_ag<-0.0/adj  # age & smoker status
 
 cor_bc<--0.1/adj  # sum.assured & gender 
 cor_bd<--0.6/adj  # sum.assured & occ
-cor_be<--0.3/adj  # sum.assured & claim
+cor_be<-1/adj  # sum.assured & claim
 cor_bf<--0.8/adj  # sum.assured & location
 cor_bg<-0.0/adj  # sum.assured & smoker status
 
 cor_cd<-0.4/adj   # gender & occ
-cor_ce<--0.65/adj # gender & claim
+cor_ce<-1/adj # gender & claim
 cor_cf<--0.8/adj  # gender & location
 cor_cg<-0.0/adj  # gender & smoker status
 
-cor_de<-0.46/adj  # occ & claim
+cor_de<-1/adj  # occ & claim
 cor_df<-0.8/adj   # occ & location
 cor_dg<-0.0/adj   # occ & smoker status
 
-cor_ef<-0.9/adj  # claim & location
-cor_eg<-1.0/adj  # claim & smoker status
+cor_ef<-1/adj  # claim & location
+cor_eg<-1/adj  # claim & smoker status
 
 cor_fg<-0.0/adj  # location & smoker status
 
@@ -188,24 +188,11 @@ bmi <- qgamma(pvars.V5,shape=6,scale=0.4)+26
 df<-df%>%mutate(gender=ifelse(df$x3 <=0.6,0,1)) #just two bins, male is 0 / female is 1
 
 
-# cumulative probabilities for each bin - 12 bins here
-df<-df%>%mutate(occ=cut(df$x4, breaks = c(0,0.2,0.25,0.3,0.35,0.4,0.5,0.6,0.65,0.72,0.75,0.77,1)))
-df<-df%>%mutate(occ=ifelse(df$occ =='(0,0.2]',1,
-                           ifelse(df$occ =='(0.2,0.25]',2,
-                                  ifelse(df$occ =='(0.25,0.3]',3,
-                                         ifelse(df$occ =='(0.3,0.35]',4,
-                                                ifelse(df$occ =='(0.35,0.4]',5,
-                                                       ifelse(df$occ =='(0.4,0.5]',6,
-                                                              ifelse(df$occ =='(0.5,0.6]',7,
-                                                                     ifelse(df$occ =='(0.6,0.65]',8,
-                                                                            ifelse(df$occ =='(0.65,0.72]',9,
-                                                                                   ifelse(df$occ =='(0.72,0.75]',10,
-                                                                                          ifelse(df$occ =='(0.75,0.77]',11,
-                            
-                              
-                                  12))))))))))))
-
-df<-df%>%mutate(claim=ifelse(df$x5 <=(1-0.002),0,1)) #just two bins, no claim last year is 0 / yes is 1
+# cumulative probabilities for each bin - three bins here
+df<-df%>%mutate(occ=cut(df$x4, breaks = c(0,0.35,0.72,1)))
+df<-df%>%mutate(occ=ifelse(df$occ =='(0,0.35]',1,ifelse(df$occ =='(0.35,0.72]',2,3)))
+                          
+df<-df%>%mutate(claim=ifelse(df$x5 <=(1-claim_rate/1000),0,1)) #just two bins, no claim last year is 0 / yes is 1
 df<-df%>%mutate(smoker_status=ifelse(df$x5 <=0.8,0,1)) #just two bins, NS is 0 / S is 1 (using x5 so will be highly correlated with claims)
 df<-df%>%mutate(compulsory=ifelse(df$x5 <=0.4,0,1))
 
@@ -256,16 +243,7 @@ df5<-df4%>%mutate(
   occ.desc=case_when(
     occ==1~"job1",
     occ==2~"job2",
-    occ==3~"job3",
-    occ==4~"job4",
-    occ==5~"job5",
-    occ==6~"job6",
-    occ==7~"job7",
-    occ==8~"job8",
-    occ==9~"job9",
-    occ==10~"job10",
-    occ==11~"job11",
-    occ==12~"job12"
+    occ==3~"job3"
   )
 )
 
