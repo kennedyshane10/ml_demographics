@@ -34,6 +34,16 @@ set.seed(180)
 # e = claim last year
 # f = work location
 
+#smoker status
+#product e.g. compulsory, optional
+#underwriting class
+#exposure year
+#number of dependents
+#years working for company
+#years member of scheme
+#executive or normal staff
+
+
 no.records<-10000
 
 adj=1
@@ -185,7 +195,8 @@ lower
 # gender is based on x3 but it only has a correlation of 0.85 with x3 since it has two categories
 # occ class is based on x4 and has a correlation of 0.92 with x4 since it has three categories
 
-df3<-select(df2,age,sum.assured,salary,gender,occ,claim,location)
+df3<-df2%>%
+  select(age,sum.assured,salary,gender,occ,claim,location)
 
 mcor<-round(cor(df3),2)
 
@@ -222,10 +233,18 @@ df6<-df5%>%mutate(
     )
 )
 
+df6<-df6%>%
+  mutate(exposure_year=2015)
+
 #additional info to include having no correlation with other data
 #smoker status, marital status, employee identification number
 #
 
 #data.to.write<-select(df6,age,sum.assured,salary,gender,occ.desc,location,claim)
 
-write.csv(df6,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
+write.csv(df6,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data_2015.csv")
+
+
+##### Import data ####
+
+insurance_data <- data.table::fread("C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/data.csv")
