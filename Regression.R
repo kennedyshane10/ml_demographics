@@ -81,12 +81,11 @@ cv_lasso<-cv.glmnet(x[train,],y[train],alpha=1,family="binomial")
 plot(cv_lasso)
 bestlam_lasso<-cv_lasso$lambda.min
 bestlam_lasso
-one_se_lasso<-cv_lasso$lambda.1se
 
 # Fit LASSO regression model on training data set using lambdas chosen by cv and examine coefficients
 
 #min lambda
-model_lasso_min<-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family="binomial")
+model_lasso<-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family="binomial")
 # Examine coefficients - min lambda
 predict(model_lasso,type="coefficients",s=bestlam_lasso)
 
