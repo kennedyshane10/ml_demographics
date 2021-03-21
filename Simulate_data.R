@@ -1,17 +1,3 @@
-##### Group Risk Scheme #####
-
-# Scenario:
-# Scheme is currently insured for Death only benefit = 2 x Salary
-# Historic claims experience available up to and including 2020
-# Membership details and claims history is provided
-# We wish to perform some experience analysis utilizing ML techniques
-# Results can be used to supplement pricing and reserving mortality assumptions
-# This script creates a synthetic data set
-
-# https://www.r-bloggers.com/2020/09/how-to-convert-continuous-variables-into-categorical-by-creating-bins/
-# http://www.econometricsbysimulation.com/2014/02/easily-generate-correlated-variables.html?m=1
-
-rm(list=ls())
 
 library(MASS)
 library(matrixcalc)
@@ -20,12 +6,7 @@ library(corpcor)
 
 start_time=Sys.time()
 
-start_year<-2000 #start year - will simulate from this exposure year up until and including 2020
 seed_set=180
-no.records<-1000 #on start year
-annual_membership_growth_perc<-15 #percentage annual membership growth per year
-claim_rate<- 50 #per thousand
-
 year<-start_year
 datalist = list()
 
@@ -76,7 +57,7 @@ cor_bf<--0.8/adj  # sum.assured & location
 cor_bg<-0.0/adj  # sum.assured & smoker status
 
 cor_cd<-0.4/adj   # gender & occ
-cor_ce<-1/adj # gender & claim
+cor_ce<--1/adj # gender & claim
 cor_cf<--0.8/adj  # gender & location
 cor_cg<-0.0/adj  # gender & smoker status
 
@@ -166,7 +147,7 @@ pvars.V7 <- pnorm(z$V7)
 # 3. Finally apply the inverse CDF of any distribution to simulate draws from that distribution.
 x1<-pvars.V1
 age <- qgamma(pvars.V1,shape=50,scale=0.8)
-yrs_service <- qgamma(pvars.V1,shape=20,scale=0.5)
+yrs_service <- qgamma(pvars.V7,shape=20,scale=0.5)
 
 
 x2<-pvars.V2
@@ -182,7 +163,7 @@ x6 <- pvars.V6
 x7 <- pvars.V7
 df <- as.data.frame(cbind(x1,x2,x3,x4,x5,x6,x7))
 
-vo2max <- qgamma(pvars.V4,shape=10,scale=0.7)+22
+vo2max <- qgamma(pvars.V3,shape=10,scale=0.7)+22
 bmi <- qgamma(pvars.V5,shape=6,scale=0.4)+26
 
 df<-df%>%mutate(gender=ifelse(df$x3 <=0.6,0,1)) #just two bins, male is 0 / female is 1
@@ -194,7 +175,7 @@ df<-df%>%mutate(occ=ifelse(df$occ =='(0,0.35]',1,ifelse(df$occ =='(0.35,0.72]',2
                           
 df<-df%>%mutate(claim=ifelse(df$x5 <=(1-claim_rate/1000),0,1)) #just two bins, no claim last year is 0 / yes is 1
 df<-df%>%mutate(smoker_status=ifelse(df$x5 <=0.8,0,1)) #just two bins, NS is 0 / S is 1 (using x5 so will be highly correlated with claims)
-df<-df%>%mutate(compulsory=ifelse(df$x5 <=0.4,0,1))
+df<-df%>%mutate(compulsory=ifelse(df$x3 <=0.4,0,1))
 
 # cumulative probabilities for each bin - three bins here
 df<-df%>%mutate(location=cut(df$x6, breaks = c(0,0.15,0.65,1)))
