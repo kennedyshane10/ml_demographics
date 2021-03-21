@@ -1,5 +1,7 @@
 rm(list=ls())
 
+start_time=Sys.time()
+
 ##### Using Regularized Regression for Life Insurance experience analysis studies #####
 
 # Scenario:
@@ -27,7 +29,7 @@ rm(list=ls())
 start_year<-2000 #start year - will simulate from this exposure year up until and including 2020
 no.records<-1000 #on start year
 annual_membership_growth_perc<-15 #percentage annual membership growth per year
-claim_rate<- 50 #per thousand
+claim_rate<- 30 #per thousand
 
 source("C:/Users/Admin/Documents/R_projects/ml_demographics/Simulate_data.R")
 
@@ -84,9 +86,39 @@ bestlam_lasso
 
 # Fit LASSO regression model on training data set using lambdas chosen by cv and examine coefficients
 
-#min lambda
 model_lasso<-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family="binomial")
-# Examine coefficients - min lambda
+# Examine coefficients
 predict(model_lasso,type="coefficients",s=bestlam_lasso)
 
-# as we can see, some of the coefficients are zero as LASSO performs variable selection
+# no coefficients shrinking to zero - why?
+
+# use model to perform predictions for test set
+test_predictions<-predict(model_lasso,type="response",s=bestlam_lasso,newx=x[test,])%>%
+  as_tibble()
+
+names(test_predictions)[1] <- "probabilty"
+
+test_actuals<-y[test]%>%
+  as_tibble()
+
+names(test_actuals)[1] <- "actuals"
+
+test_actuals<-mutate(test_actuals,actuals=ifelse(test_actuals$actuals=="Y",1,0))
+
+test_output<-cbind(x[test,],test_predictions,test_actuals)%>%
+  mutate(actual_risk_cost=actuals*sum.assured)%>%
+  mutate(expected_risk_cost=probabilty*sum.assured)
+
+A<-sum(test_output$actual_risk_cost)
+E<-sum(test_output$expected_risk_cost)
+A
+E
+A/E
+
+data.table:: fwrite(test_output,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/test_output.csv")
+
+end_time=Sys.time()
+
+tot_time=end_time-start_time
+tot_time
+

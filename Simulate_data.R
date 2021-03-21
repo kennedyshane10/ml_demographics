@@ -4,8 +4,6 @@ library(matrixcalc)
 library(dplyr)
 library(corpcor)
 
-start_time=Sys.time()
-
 seed_set=180
 year<-start_year
 datalist = list()
@@ -164,7 +162,7 @@ x7 <- pvars.V7
 df <- as.data.frame(cbind(x1,x2,x3,x4,x5,x6,x7))
 
 vo2max <- qgamma(pvars.V3,shape=10,scale=0.7)+22
-bmi <- qgamma(pvars.V5,shape=6,scale=0.4)+26
+bmi <- qgamma(pvars.V1,shape=6,scale=0.4)+26
 
 df<-df%>%mutate(gender=ifelse(df$x3 <=0.6,0,1)) #just two bins, male is 0 / female is 1
 
@@ -258,8 +256,3 @@ insurance_data<-data.table::rbindlist(datalist)
 
 write.csv(insurance_data,paste0("C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/Life_Insurance_data.csv"))
 
-end_time=Sys.time()
-
-tot_time=end_time-start_time
-tot_time
-rm(list=ls())
