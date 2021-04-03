@@ -2860,7 +2860,11 @@ div.tocify {
 </div>
 <div id="simulated-data" class="section level2">
 <h2><span class="header-section-number">1.2</span> Simulated data</h2>
-<p>Overview: * A data set was simulated representing a block of insured lives for annually renewable group corporate life insurance business * Member and claims data is provided from 2000 up to 2020</p>
+<p>Overview:</p>
+<ul>
+<li>A data set was simulated representing a block of insured lives for annually renewable group corporate life insurance business</li>
+<li>Member and claims data is provided from 2000 up to 2020</li>
+</ul>
 <p>Data dictionary:</p>
 <ul>
 <li>Age: Exact age of insured life at beginning of exposure year</li>
@@ -3052,36 +3056,35 @@ plot(cv_lasso)</code></pre>
 bestlam_lasso</code></pre>
 <pre><code>## [1] 1.6354e-05</code></pre>
 </div>
-</div>
-<div id="fit-lasso-regression-model-on-training-data-set-using-lambdas-chosen-by-cv" class="section level1">
-<h1><span class="header-section-number">5</span> Fit LASSO regression model on training data set using lambdas chosen by cv</h1>
+<div id="fit-lasso-regression-model-on-training-data-set-using-lambdas-chosen-by-cv" class="section level2">
+<h2><span class="header-section-number">4.2</span> Fit LASSO regression model on training data set using lambdas chosen by cv</h2>
 <pre class="r"><code>model_lasso&lt;-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family=&quot;binomial&quot;)</code></pre>
 </div>
-<div id="examine-coefficients" class="section level1">
-<h1><span class="header-section-number">6</span> Examine coefficients</h1>
+<div id="examine-coefficients" class="section level2">
+<h2><span class="header-section-number">4.3</span> Examine coefficients</h2>
 <pre class="r"><code>predict(model_lasso,type=&quot;coefficients&quot;,s=bestlam_lasso)</code></pre>
 <pre><code>## 17 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                           1
-## (Intercept)   -5.330508e+04
+## (Intercept)   -5.330554e+04
 ## (Intercept)    .           
 ## age            .           
 ## sum.assured    .           
-## salary        -3.576543e-07
+## salary        -3.576646e-07
 ## genderM        .           
 ## smoker_status  .           
-## compulsory    -6.877979e-03
-## yrs_service    1.049226e-02
+## compulsory    -6.878689e-03
+## yrs_service    1.049204e-02
 ## vo2max         .           
-## bmi            1.346923e-01
-## var1          -1.649394e-03
+## bmi            1.346920e-01
+## var1          -1.649192e-03
 ## var2           .           
-## var3           1.475179e+02
-## var4           2.348543e-02
+## var3           1.475192e+02
+## var4           2.348496e-02
 ## var5           .           
-## exposure_year -1.132605e-02</code></pre>
+## exposure_year -1.132606e-02</code></pre>
 </div>
-<div id="use-model-to-perform-predictions-for-test-set" class="section level1">
-<h1><span class="header-section-number">7</span> Use model to perform predictions for test set</h1>
+<div id="use-model-to-perform-predictions-for-test-set" class="section level2">
+<h2><span class="header-section-number">4.4</span> Use model to perform predictions for test set</h2>
 <pre class="r"><code>test_predictions&lt;-predict(model_lasso,type=&quot;response&quot;,s=bestlam_lasso,newx=x[test,])%&gt;%
   as_tibble()
 
@@ -3103,7 +3106,7 @@ E&lt;-sum(test_output$expected_risk_cost)
 A</code></pre>
 <pre><code>## [1] 244635000</code></pre>
 <pre class="r"><code>E</code></pre>
-<pre><code>## [1] 244618040</code></pre>
+<pre><code>## [1] 244618042</code></pre>
 <pre class="r"><code>A/E</code></pre>
 <pre><code>## [1] 1.000069</code></pre>
 <pre class="r"><code>data.table:: fwrite(test_output,&quot;C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/test_output.csv&quot;)
@@ -3112,7 +3115,20 @@ end_time=Sys.time()
 
 tot_time=end_time-start_time
 tot_time</code></pre>
-<pre><code>## Time difference of 9.949953 mins</code></pre>
+<pre><code>## Time difference of 7.159352 mins</code></pre>
+<hr />
+</div>
+</div>
+<div id="key-considerations" class="section level1">
+<h1><span class="header-section-number">5</span> Key considerations <a name="section5"></a></h1>
+<hr />
+<ul>
+<li>Ethics and compliance</li>
+<li>Understanding the business problem first</li>
+<li>Data quality and volume</li>
+<li>Data architecture</li>
+<li>CRISP DM</li>
+</ul>
 <hr />
 </div>
 
