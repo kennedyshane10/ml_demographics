@@ -1,0 +1,201 @@
+---
+title: "Regularized Regression Example"
+author: ''
+date: 'last updated: `r Sys.Date()`'
+output:
+  html_document:
+    theme: journal
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+    number_sections: yes
+    df_print: paged
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  word_document:
+    toc: yes
+    reference_docx: word_styles_reference.docx
+    toc_depth: 1
+---
+
+
+***
+  
+# Introduction  <a name="section1"></a>
+  
+***
+
+## Objectives
+
+* Perform some exploratory data analysis on a simulated insurance data set
+* Fit a regularized regression model to a subset of the data set (training set) using LASSO with logistic regresssion
+* Use the model to predict claims incidence rates and expected payouts on the hold out data (test set)
+  
+## Simulated data
+
+Overview:
+
+* A data set was simulated representing a block of insured lives for annually renewable group corporate life insurance business
+* Member and claims data is provided from 2000 up to 2020
+
+Data dictionary:
+
+* Age: Exact age of insured life at beginning of exposure year
+* Sum Assured: Insurance coverage equal to two times salary
+* Salary: Insured life's salary at beginning of exposure year
+* Gender: M = Male, F = Female
+* Occ: Occupation class. 1 = white collar/office workers, 2 = 50% office work/50% manual work, 3 = bue collar/manual work
+* occ.desc: description of occupations
+* Claim: Y = Claim occured during exposure year resulting in a payout of sum assured
+* Location: Three locations of coverage (site 1, site 2, site 3)
+* Smoker: 0 = non smoker, 1 = smoker 
+* Compulsory: 0 = not compulsory for employee to become member of scheme, 1 = compulsory for employee to become member of scheme
+* yrs_service: number of years service since joining the company
+* vo2max: vo2max recorded for employee when they joined the company
+* bmi: body max index recorded for employee when they joined the company
+* var1 - var5: unknown continuous variables provided
+ 
+***
+ 
+# Exploratory data analysis <a name="section2"></a>
+  
+***
+
+## Load packages
+```{r}
+start_time=Sys.time()
+library(dplyr)
+library(glmnet)
+```
+
+## High level look at the data
+
+```{r}
+life_insurance_data<-data.table::fread("C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/Life_Insurance_data.csv")
+
+glimpse(life_insurance_data)
+str(life_insurance_data)
+summary(life_insurance_data)
+
+```
+
+## Some data manipulation
+
+* Remove some unnecessary columns
+* Exclude occ and location for now
+* Replace characters with numeric for Gender and Claim
+
+```{r}
+life_insurance_data<-life_insurance_data[,-c(1,6,8,19)]
+
+data_adjusted<-life_insurance_data%>%
+  mutate(gender=ifelse(life_insurance_data$gender=="M",0,1))%>%
+  mutate(claim=ifelse(life_insurance_data$claim=="N",0,1))
+```
+
+
+## Look at correlations 
+```{r}
+mcor<-round(cor(data_adjusted),2)
+
+lower<-mcor
+lower[lower.tri(mcor)]<-""
+lower<-as.data.frame(lower)
+lower
+
+data.table::fwrite(lower,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/correlations.csv")
+```
+
+***
+  
+# Prepare data for modelling <a name="section3"></a>
+  
+***
+
+## Specify x (explanatory variables) and y (dependent variable)
+```{r}
+x=model.matrix(claim ~.,life_insurance_data)
+y=life_insurance_data$claim
+```
+    
+## Split data into training and test sets #####
+```{r}
+set.seed(297)
+train<-sample (1: nrow(x), floor(nrow(x)*0.8))
+test<-(-train)
+y_test<-y[test]
+```
+
+***
+  
+# Fit regularized regression model <a name="section4"></a>
+  
+***
+
+## Use cross validation to choose lambda
+
+* Logistic regression model for classification
+
+```{r}
+set.seed(1)
+cv_lasso<-cv.glmnet(x[train,],y[train],alpha=1,family="binomial")
+plot(cv_lasso)
+bestlam_lasso<-cv_lasso$lambda.min
+bestlam_lasso
+```
+
+## Fit LASSO regression model on training data set using lambdas chosen by cv
+```{r}
+model_lasso<-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family="binomial")
+```
+
+## Examine coefficients
+```{r}
+predict(model_lasso,type="coefficients",s=bestlam_lasso)
+```
+
+## Use model to perform predictions for test set
+```{r}
+test_predictions<-predict(model_lasso,type="response",s=bestlam_lasso,newx=x[test,])%>%
+  as_tibble()
+
+names(test_predictions)[1] <- "probabilty"
+
+test_actuals<-y[test]%>%
+  as_tibble()
+
+names(test_actuals)[1] <- "actuals"
+
+test_actuals<-mutate(test_actuals,actuals=ifelse(test_actuals$actuals=="Y",1,0))
+
+test_output<-cbind(x[test,],test_predictions,test_actuals)%>%
+  mutate(actual_risk_cost=actuals*sum.assured)%>%
+  mutate(expected_risk_cost=probabilty*sum.assured)
+
+A<-sum(test_output$actual_risk_cost)
+E<-sum(test_output$expected_risk_cost)
+A
+E
+A/E
+
+data.table:: fwrite(test_output,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/test_output.csv")
+
+end_time=Sys.time()
+
+tot_time=end_time-start_time
+tot_time
+```
+
+***
+  
+# Key considerations <a name="section5"></a>
+  
+***
+* Ethics and compliance 
+* Understanding the business problem first
+* Data quality and volume
+* Data architecture
+* CRISP DM
+
+***
