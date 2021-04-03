@@ -90,8 +90,6 @@ model_lasso<-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family="bino
 # Examine coefficients
 predict(model_lasso,type="coefficients",s=bestlam_lasso)
 
-# no coefficients shrinking to zero - why?
-
 # use model to perform predictions for test set
 test_predictions<-predict(model_lasso,type="response",s=bestlam_lasso,newx=x[test,])%>%
   as_tibble()

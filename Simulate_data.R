@@ -152,6 +152,11 @@ x2<-pvars.V2
 sum.assured <- round(qlnorm(pvars.V2,meanlog=11,sdlog=0.7),-3)
 salary <- sum.assured/2 # sum assured is a multiple of salary 
 
+var1 <- qgamma(pvars.V3,shape=15,scale=0.9)
+var2 <- qgamma(pvars.V4,shape=2,scale=0.5)+20
+var3 <- qgamma(pvars.V5,shape=20,scale=0.1)+357
+var4 <- qgamma(pvars.V6,shape=30,scale=0.3)+9742
+var5 <- qgamma(pvars.V7,shape=75,scale=0.7)+12
 
 #binning normal distribution into categorical variables so not applying inverse to these
 x3 <- pvars.V3
@@ -179,7 +184,7 @@ df<-df%>%mutate(compulsory=ifelse(df$x3 <=0.4,0,1))
 df<-df%>%mutate(location=cut(df$x6, breaks = c(0,0.15,0.65,1)))
 df<-df%>%mutate(location=ifelse(df$location =='(0,0.15]',1,ifelse(df$location =='(0.15,0.65]',2,3)))
 
-df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,salary,df$x3,df$gender,df$x4,df$occ,df$x5,df$claim,df$x6,df$location,df$smoker_status,df$compulsory,yrs_service,vo2max,bmi))%>%
+df2<-as.data.frame(cbind(df$x1,age,df$x2,sum.assured,salary,df$x3,df$gender,df$x4,df$occ,df$x5,df$claim,df$x6,df$location,df$smoker_status,df$compulsory,yrs_service,vo2max,bmi,var1,var2,var3,var4,var5))%>%
   rename(x1=V1,
          x2=V3,
          x3=V6,
@@ -205,7 +210,7 @@ lower
 
 
 df3<-df2%>%
-  select(age,sum.assured,salary,gender,occ,claim,location,smoker_status,compulsory, yrs_service,vo2max,bmi)
+  select(age,sum.assured,salary,gender,occ,claim,location,smoker_status,compulsory, yrs_service,vo2max,bmi,var1,var2,var3,var4,var5)
 
 mcor<-round(cor(df3),2)
 
