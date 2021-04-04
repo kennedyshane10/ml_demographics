@@ -154,7 +154,7 @@ salary <- sum.assured/2 # sum assured is a multiple of salary
 
 var1 <- qgamma(pvars.V3,shape=15,scale=0.9)
 var2 <- qgamma(pvars.V4,shape=2,scale=0.5)+20
-var3 <- qgamma(pvars.V5,shape=20,scale=0.1)+357
+var3 <- qgamma(pvars.V3,shape=20,scale=0.1)+357
 var4 <- qgamma(pvars.V6,shape=30,scale=0.3)+9742
 var5 <- qgamma(pvars.V7,shape=75,scale=0.7)+12
 

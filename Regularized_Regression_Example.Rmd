@@ -1,6 +1,6 @@
 ---
 title: "Regularized Regression Example"
-author: ''
+author: 'Shane Kennedy FSAI, FIA'
 date: 'last updated: `r Sys.Date()`'
 output:
   html_document:
@@ -31,6 +31,8 @@ output:
 * Perform some exploratory data analysis on a simulated insurance data set
 * Fit a regularized regression model to a subset of the data set (training set) using LASSO with logistic regresssion
 * Use the model to predict claims incidence rates and expected payouts on the hold out data (test set)
+
+Many of the techniques applied in this document are described in 'Introduction to statistical learning with applications in R'
   
 ## Simulated data
 
@@ -38,6 +40,8 @@ Overview:
 
 * A data set was simulated representing a block of insured lives for annually renewable group corporate life insurance business
 * Member and claims data is provided from 2000 up to 2020
+* Some simplifications are made e.g. assume that no members leave schemes during the year
+* For illustrative purposes unknown continuous variables are added to the data set which have some correlation with other known variables. These unknown variables could represent medical scores recorded at underwriting for example. 
 
 Data dictionary:
 
@@ -67,6 +71,9 @@ Data dictionary:
 start_time=Sys.time()
 library(dplyr)
 library(glmnet)
+library(MASS)
+library(matrixcalc)
+library(corpcor)
 ```
 
 ## High level look at the data
@@ -154,8 +161,18 @@ model_lasso<-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family="bino
 predict(model_lasso,type="coefficients",s=bestlam_lasso)
 ```
 
-# Predict on test set <a name="section5"></a>
+## Assess model performance on test set <a name="section5"></a>
 
+#Some metrics
+```{r}
+assess<-assess.glmnet(model_lasso, newx=x[test,], newy = y[test])
+assess
+
+cnf <- confusion.glmnet(model_lasso, newx = x[train, ], newy = y[train])
+print(cnf)
+```
+
+# Get probabilities for test set
 ```{r}
 test_predictions<-predict(model_lasso,type="response",s=bestlam_lasso,newx=x[test,])%>%
   as_tibble()
@@ -204,5 +221,15 @@ tot_time
   + Rmarkdown: https://bookdown.org/yihui/rmarkdown/
   + ggplot: https://ggplot2.tidyverse.org/
   + Shiny: https://shiny.rstudio.com/
+
+
+***
+
+# Further reading <a name="section6"></a>
+  
+***
+* Logistic Regression for Insured Mortality Experience Studies:
+  + SOA: https://www.soa.org/globalassets/assets/files/resources/essays-monographs/2014-living-to-100/mono-li14-2a-zhu.pdf
+* glmnet package: https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf
 
 ***
