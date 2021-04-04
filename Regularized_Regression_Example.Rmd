@@ -74,7 +74,6 @@ library(glmnet)
 ```{r}
 life_insurance_data<-data.table::fread("C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/Life_Insurance_data.csv")
 
-glimpse(life_insurance_data)
 str(life_insurance_data)
 summary(life_insurance_data)
 
@@ -155,7 +154,8 @@ model_lasso<-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family="bino
 predict(model_lasso,type="coefficients",s=bestlam_lasso)
 ```
 
-## Use model to perform predictions for test set
+# Predict on test set <a name="section5"></a>
+
 ```{r}
 test_predictions<-predict(model_lasso,type="response",s=bestlam_lasso,newx=x[test,])%>%
   as_tibble()
@@ -189,13 +189,20 @@ tot_time
 
 ***
   
-# Key considerations <a name="section5"></a>
+# Key considerations <a name="section6"></a>
   
 ***
 * Ethics and compliance 
-* Understanding the business problem first
+* Understanding the business problem 
 * Data quality and volume
 * Data architecture
-* CRISP DM
+  + Spark: https://therinspark.com/intro.html
+  + H2O: https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/glm.html
+* Project structure 
+  + CRISP DM: https://www.datascience-pm.com/crisp-dm-2/
+* Communication
+  + Rmarkdown: https://bookdown.org/yihui/rmarkdown/
+  + ggplot: https://ggplot2.tidyverse.org/
+  + Shiny: https://shiny.rstudio.com/
 
 ***
