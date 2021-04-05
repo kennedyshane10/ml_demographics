@@ -1,5 +1,5 @@
 ---
-title: "Regularized Regression Example"
+title: "Regularized Regression Life Insurance Example"
 author: 'Shane Kennedy FSAI, FIA'
 date: 'last updated: `r Sys.Date()`'
 output:
@@ -28,7 +28,6 @@ output:
 
 ## Objectives
 
-* Perform some exploratory data analysis on a simulated insurance data set
 * Fit a regularized regression model to a subset of the data set (training set) using LASSO with logistic regresssion
 * Use the model to predict claims incidence rates and expected payouts on the hold out data (test set)
 
@@ -43,13 +42,13 @@ Overview:
 * Some simplifications are made e.g. assume that no members leave schemes during the year
 * For illustrative purposes unknown continuous variables are added to the data set which have some correlation with other known variables. These unknown variables could represent medical scores recorded at underwriting for example. 
 
-Data dictionary:
+Variable definitions:
 
 * Age: Exact age of insured life at beginning of exposure year
 * Sum Assured: Insurance coverage equal to two times salary
 * Salary: Insured life's salary at beginning of exposure year
 * Gender: M = Male, F = Female
-* Occ: Occupation class. 1 = white collar/office workers, 2 = 50% office work/50% manual work, 3 = bue collar/manual work
+* Occ: Occupation class. 1 = white collar/office workers, 2 = 50% office work/50% manual work, 3 = blue collar/manual work
 * occ.desc: description of occupations
 * Claim: Y = Claim occured during exposure year resulting in a payout of sum assured
 * Location: Three locations of coverage (site 1, site 2, site 3)
@@ -62,12 +61,12 @@ Data dictionary:
  
 ***
  
-# Exploratory data analysis <a name="section2"></a>
+# High level look at the data <a name="section2"></a>
   
 ***
 
 ## Load packages
-```{r}
+```{r,warning = FALSE,message = FALSE}
 start_time=Sys.time()
 library(dplyr)
 library(glmnet)
@@ -76,7 +75,7 @@ library(matrixcalc)
 library(corpcor)
 ```
 
-## High level look at the data
+## Summary of data
 
 ```{r}
 life_insurance_data<-data.table::fread("C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/Life_Insurance_data.csv")
@@ -141,7 +140,7 @@ y_test<-y[test]
 
 ## Use cross validation to choose lambda
 
-* Logistic regression model for classification
+* Using logistic regression model for classification
 
 ```{r}
 set.seed(1)
@@ -209,8 +208,8 @@ tot_time
 # Key considerations <a name="section6"></a>
   
 ***
-* Ethics and compliance 
 * Understanding the business problem 
+* Ethics and compliance 
 * Data quality and volume
 * Data architecture
   + Spark: https://therinspark.com/intro.html
