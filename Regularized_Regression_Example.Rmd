@@ -201,7 +201,7 @@ We see that in this example LASSO has shrunk most of the coefficients to zero si
 
 ***
 
-##Some metrics for fitted model
+## Some metrics for fitted model
 ```{r}
 assess<-assess.glmnet(model_lasso, newx=x[test,], newy = y[test])
 assess
@@ -212,7 +212,7 @@ print(cnf)
 Confusion matrix above predicts if each member of the test data set claims or not based on their probability scores.
 Threshold used above is 0.5. So if probability score is >0.5 claim is predicted, otherwise no claim predicted.
 
-##Some metrics for basic model with larger lambda for illustrative purposes
+## Some metrics for basic model with larger lambda for illustrative purposes
 ```{r}
 assess_check<-assess.glmnet(model_lasso_check, newx=x[test,], newy = y[test])
 assess_check
