@@ -111,6 +111,8 @@ lower[lower.tri(mcor)]<-""
 lower<-as.data.frame(lower)
 lower
 
+psych::corPlot(data_adjusted)
+
 data.table::fwrite(lower,"C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/correlations.csv")
 ```
 
