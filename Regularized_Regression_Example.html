@@ -2842,7 +2842,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Regularized Regression Life Insurance Example</h1>
 <h4 class="author">Shane Kennedy FSAI, FIA</h4>
-<h4 class="date">last updated: 2021-04-05</h4>
+<h4 class="date">last updated: 2021-04-06</h4>
 
 </div>
 
@@ -3072,30 +3072,30 @@ bestlam_lasso</code></pre>
 ## exposure_year -3.847059e-03</code></pre>
 <p>We see that LASSO has shrunk some of the coefficients to zero.</p>
 </div>
-<div id="fit-model-on-training-data-set-using-larger-lambda-for-illustrative-purposes" class="section level2">
-<h2><span class="header-section-number">4.4</span> Fit model on training data set using larger lambda for illustrative purposes</h2>
-<pre class="r"><code>checklambda&lt;-exp(-3)
+<div id="fit-model-on-training-data-set-using-larger-lambda" class="section level2">
+<h2><span class="header-section-number">4.4</span> Fit model on training data set using larger lambda</h2>
+<pre class="r"><code>checklambda&lt;-exp(-5)
 model_lasso_check&lt;-glmnet(x[train,],y[train],alpha=1,lambda=checklambda,family=&quot;binomial&quot;)
 
 predict(model_lasso_check,type=&quot;coefficients&quot;,s=checklambda)</code></pre>
 <pre><code>## 17 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
-##                        1
-## (Intercept)   -4.0217596
-## (Intercept)    .        
-## age            .        
-## sum.assured    .        
-## salary         .        
-## genderM        .        
-## smoker_status  2.1514557
-## compulsory     .        
-## yrs_service    .        
-## vo2max         .        
-## bmi            0.0189394
-## var1           .        
-## var2           .        
-## var3           .        
-## var4           .        
-## var5           .        
+##                           1
+## (Intercept)   -7.103382e+03
+## (Intercept)    .           
+## age            2.426176e-01
+## sum.assured    2.653596e-06
+## salary         1.297798e-05
+## genderM        .           
+## smoker_status  1.024297e+00
+## compulsory     .           
+## yrs_service    4.420320e-01
+## vo2max         .           
+## bmi            .           
+## var1           .           
+## var2           6.302691e-01
+## var3          -1.144086e+00
+## var4           7.671183e-01
+## var5           .           
 ## exposure_year  .</code></pre>
 <p>We see that in this example LASSO has shrunk most of the coefficients to zero since we have deliberately chosen a large lambda tuning parameter.</p>
 <hr />
@@ -3147,47 +3147,47 @@ print(cnf)</code></pre>
 ##  Percent Correct:  0.9795</code></pre>
 <p>Confusion matrix above predicts if each member of the test data set claims or not based on their probability scores. Threshold used above is 0.5. So if probability score is &gt;0.5 claim is predicted, otherwise no claim predicted.</p>
 </div>
-<div id="some-metrics-for-basic-model-with-larger-lambda-for-illustrative-purposes" class="section level2">
-<h2><span class="header-section-number">5.2</span> Some metrics for basic model with larger lambda for illustrative purposes</h2>
+<div id="some-metrics-for-second-model-with-larger-lambda" class="section level2">
+<h2><span class="header-section-number">5.2</span> Some metrics for second model with larger lambda</h2>
 <pre class="r"><code>assess_check&lt;-assess.glmnet(model_lasso_check, newx=x[test,], newy = y[test])
 assess_check</code></pre>
 <pre><code>## $deviance
-##     s0 
-## 0.3551 
+##        s0 
+## 0.1500796 
 ## attr(,&quot;measure&quot;)
 ## [1] &quot;Binomial Deviance&quot;
 ## 
 ## $class
-##         s0 
-## 0.07205994 
+##        s0 
+## 0.0292954 
 ## attr(,&quot;measure&quot;)
 ## [1] &quot;Misclassification Error&quot;
 ## 
 ## $auc
-## [1] 0.9302711
+## [1] 0.9934679
 ## attr(,&quot;measure&quot;)
 ## [1] &quot;AUC&quot;
 ## 
 ## $mse
-##        s0 
-## 0.1070156 
+##         s0 
+## 0.04208675 
 ## attr(,&quot;measure&quot;)
 ## [1] &quot;Mean-Squared Error&quot;
 ## 
 ## $mae
 ##        s0 
-## 0.2351794 
+## 0.1136435 
 ## attr(,&quot;measure&quot;)
 ## [1] &quot;Mean Absolute Error&quot;</code></pre>
 <pre class="r"><code>cnf_check &lt;- confusion.glmnet(model_lasso_check, newx = x[test, ], newy = y[test])
 print(cnf_check)</code></pre>
 <pre><code>##          True
 ## Predicted     N    Y Total
-##     N     22046 1712 23758
+##     N     21936  586 22522
+##     Y       110 1126  1236
 ##     Total 22046 1712 23758
 ## 
-##  Percent Correct:  0.9279</code></pre>
-<p>Confusion matrix above shows that the classifier predicts no claim in all cases and has a prediction accuracy of almost 93%!! This highlights how we need to be careful when analyzing metrics.</p>
+##  Percent Correct:  0.9707</code></pre>
 </div>
 <div id="get-probabilities-for-test-set-using-fitted-models" class="section level2">
 <h2><span class="header-section-number">5.3</span> Get probabilities for test set using fitted models</h2>
@@ -3217,7 +3217,7 @@ A</code></pre>
 <pre class="r"><code>A/E</code></pre>
 <pre><code>## [1] 0.979795</code></pre>
 <pre class="r"><code>data.table:: fwrite(test_output,&quot;C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/test_output.csv&quot;)</code></pre>
-<p>We then do the same using the basic model</p>
+<p>We then do the same using the second model fitted with larger lambda</p>
 <pre class="r"><code>test_predictions_check&lt;-predict(model_lasso_check,type=&quot;response&quot;,s=checklambda,newx=x[test,])%&gt;%
   as_tibble()
 
@@ -3239,17 +3239,17 @@ E&lt;-sum(test_output_basic$expected_risk_cost)
 A</code></pre>
 <pre><code>## [1] 244635000</code></pre>
 <pre class="r"><code>E</code></pre>
-<pre><code>## [1] 186124883</code></pre>
+<pre><code>## [1] 242216745</code></pre>
 <pre class="r"><code>A/E</code></pre>
-<pre><code>## [1] 1.314359</code></pre>
+<pre><code>## [1] 1.009984</code></pre>
 <pre class="r"><code>data.table:: fwrite(test_output,&quot;C:/Users/Admin/Documents/R_projects/ml_demographics/Dataset/test_output_basic.csv&quot;)</code></pre>
 <p>We can see that the model fitted using cross validation to choose lambda selects 12 out of the 15 variables. For the test set this model can predict the expected claims value to almost within 2% of the actual claims amount. The lambda coefficient chosen by cross validation is such that the deviance function is minimized. Some coefficients are shrunk to zero improving interpretability of the model.</p>
-<p>For the more basic model, where we deliberately chose the lambda tuning parameter to be high, only 2 variables are selected. This model is obviously easier to interpret however the deviance function is significantly higher. As a result, the expected claims value is 31% higher than the actual claims value for the test set demonstrating poor predictive power.</p>
+<p>For the second model, where we deliberately chose the lambda tuning parameter to be high, fewer variables are selected. This model is obviously easier to interpret however the deviance function is higher.</p>
 <pre class="r"><code>end_time=Sys.time()
 
 tot_time=end_time-start_time
 tot_time</code></pre>
-<pre><code>## Time difference of 7.205389 mins</code></pre>
+<pre><code>## Time difference of 9.9968 mins</code></pre>
 <hr />
 </div>
 </div>
@@ -3257,11 +3257,25 @@ tot_time</code></pre>
 <h1><span class="header-section-number">6</span> Key considerations <a name="section6"></a></h1>
 <hr />
 <ul>
-<li>Understanding the business problem</li>
-<li>Ethics and compliance</li>
-<li>Data quality and volume</li>
+<li>Understanding the business problem, for example
+<ul>
+<li>To support mortality experience analysis for reserving?</li>
+<li>To support underwriting team when deciding what members require additional underwriting prior?</li>
+<li>To support pricing team?</li>
+</ul></li>
+<li>Ethics and compliance
+<ul>
+<li>Engage early with compliance team to ensure that required data can be collected in compliance with rules and regulations</li>
+<li>Is there risk that our model could result in exclusion of certain groups from coverage?</li>
+</ul></li>
+<li>Data quality and volume
+<ul>
+<li>May depend on the business problem</li>
+<li>Will we have the variables chosen by the model for future business?</li>
+</ul></li>
 <li>Data architecture
 <ul>
+<li>For larger data sets (e.g. millions of rows, hundreds of variables) run time for glmnet may be too slow so other options may need to be considered such as Spark and H2O</li>
 <li>Spark: <a href="https://therinspark.com/intro.html" class="uri">https://therinspark.com/intro.html</a></li>
 <li>H2O: <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/glm.html" class="uri">https://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/glm.html</a></li>
 </ul></li>
