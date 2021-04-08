@@ -2794,7 +2794,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Regularized Regression Life Insurance Example</h1>
 <h4 class="author">Shane Kennedy FSAI, FIA</h4>
-<h4 class="date">last updated: 2021-04-07</h4>
+<h4 class="date">last updated: 2021-04-08</h4>
 
 </div>
 
@@ -2818,7 +2818,7 @@ div.tocify {
 <li>A data set was simulated representing a block of insured lives for annually renewable group corporate life insurance business</li>
 <li>Member and claims data is provided from 2000 up to 2020</li>
 <li>Some simplifications are made e.g. assume that no members leave schemes during the year</li>
-<li>For illustrative purposes unknown continuous variables are added to the data set which have some correlation with other known variables. These unknown variables could represent medical scores recorded at underwriting for example.</li>
+<li>For illustrative purposes unknown continuous variables are added to the data set which have some correlation with other known variables.</li>
 </ul>
 <p>Variable definitions:</p>
 <ul>
@@ -3008,14 +3008,11 @@ bestlam_lasso</code></pre>
 <pre class="r"><code>log(cv_lasso$lambda.1se)</code></pre>
 <pre><code>## [1] -8.770745</code></pre>
 </div>
-<div id="fit-lasso-regression-model-on-training-data-set-using-lambda-chosen-by-cross-validation" class="section level2">
-<h2><span class="header-section-number">4.2</span> Fit LASSO regression model on training data set using lambda chosen by cross validation</h2>
+<div id="fit-lasso-regression-model-on-training-data-set-using-lambda.min" class="section level2">
+<h2><span class="header-section-number">4.2</span> Fit LASSO regression model on training data set using lambda.min</h2>
 <p>We use the lambda chosen by cross validation i.e. lambda.min. This is the value of λ that gives minimum mean cross-validated error. The other λ saved is lambda.1se, which gives the most regularized model such that error is within one standard error of the minimum. To use that, we only need to replace lambda.min with lambda.1se above.</p>
-<pre class="r"><code>model_lasso&lt;-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family=&quot;binomial&quot;)</code></pre>
-</div>
-<div id="examine-coefficients" class="section level2">
-<h2><span class="header-section-number">4.3</span> Examine coefficients</h2>
-<pre class="r"><code>predict(model_lasso,type=&quot;coefficients&quot;,s=bestlam_lasso)</code></pre>
+<pre class="r"><code>model_lasso&lt;-glmnet(x[train,],y[train],alpha=1,lambda=bestlam_lasso,family=&quot;binomial&quot;)
+predict(model_lasso,type=&quot;coefficients&quot;,s=bestlam_lasso)</code></pre>
 <pre><code>## 17 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                           1
 ## (Intercept)   -3.812829e+04
@@ -3035,7 +3032,32 @@ bestlam_lasso</code></pre>
 ## var4           3.738230e+00
 ## var5           6.638695e-01
 ## exposure_year -5.425579e-03</code></pre>
-<p>We see that LASSO has shrunk some of the coefficients to zero.</p>
+<p>We see that in this example lambda.min tuning parameter does not shrink any coefficients to zero.</p>
+</div>
+<div id="fit-lasso-regression-model-on-training-data-set-using-lambda.1se" class="section level2">
+<h2><span class="header-section-number">4.3</span> Fit LASSO regression model on training data set using lambda.1se</h2>
+<pre class="r"><code>model_lasso_1se&lt;-glmnet(x[train,],y[train],alpha=1,lambda=cv_lasso$lambda.1se,family=&quot;binomial&quot;)
+predict(model_lasso_1se,type=&quot;coefficients&quot;,s=cv_lasso$lambda.1se)</code></pre>
+<pre><code>## 17 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                           1
+## (Intercept)   -2.805482e+04
+## (Intercept)    .           
+## age            1.965153e+00
+## sum.assured    2.188653e-05
+## salary         2.987745e-18
+## genderM        3.140859e-01
+## smoker_status  3.188391e+00
+## compulsory     .           
+## yrs_service    .           
+## vo2max         .           
+## bmi           -6.296371e+00
+## var1           .           
+## var2           .           
+## var3           1.166643e+00
+## var4           2.840966e+00
+## var5           3.804420e-01
+## exposure_year -3.094595e-03</code></pre>
+<p>We see that in this example lambda.1se tuning parameter shrinks some coefficients to zero.</p>
 </div>
 <div id="fit-model-on-training-data-set-using-larger-lambda" class="section level2">
 <h2><span class="header-section-number">4.4</span> Fit model on training data set using larger lambda</h2>
@@ -3062,15 +3084,15 @@ predict(model_lasso_check,type=&quot;coefficients&quot;,s=checklambda)</code></p
 ## var4           8.105125e-01
 ## var5           .           
 ## exposure_year  .</code></pre>
-<p>We see that in this example LASSO has shrunk most of the coefficients to zero since we have deliberately chosen a large lambda tuning parameter.</p>
+<p>We see that in this example LASSO has shrunk many coefficients to zero since we have deliberately chosen a large lambda tuning parameter.</p>
 <hr />
 </div>
 </div>
 <div id="assess-models-performance-on-test-set" class="section level1">
 <h1><span class="header-section-number">5</span> Assess models’ performance on test set <a name="section5"></a></h1>
 <hr />
-<div id="some-metrics-for-fitted-model" class="section level2">
-<h2><span class="header-section-number">5.1</span> Some metrics for fitted model</h2>
+<div id="metrics-for-model-fitted-using-lambda.min" class="section level2">
+<h2><span class="header-section-number">5.1</span> Metrics for model fitted using lambda.min</h2>
 <pre class="r"><code>assess&lt;-assess.glmnet(model_lasso, newx=x[test,], newy = y[test])
 assess</code></pre>
 <pre><code>## $deviance
@@ -3112,8 +3134,50 @@ print(cnf)</code></pre>
 ##  Percent Correct:  0.9759</code></pre>
 <p>Confusion matrix above predicts if each member of the test data set claims or not based on their probability scores. Threshold used above is 0.5. So if probability score is &gt;0.5 claim is predicted, otherwise no claim predicted.</p>
 </div>
-<div id="some-metrics-for-second-model-with-larger-lambda" class="section level2">
-<h2><span class="header-section-number">5.2</span> Some metrics for second model with larger lambda</h2>
+<div id="metrics-for-model-fitted-using-lambda.1se" class="section level2">
+<h2><span class="header-section-number">5.2</span> Metrics for model fitted using lambda.1se</h2>
+<pre class="r"><code>assess_1se&lt;-assess.glmnet(model_lasso_1se, newx=x[test,], newy = y[test])
+assess_1se</code></pre>
+<pre><code>## $deviance
+##        s0 
+## 0.1199744 
+## attr(,&quot;measure&quot;)
+## [1] &quot;Binomial Deviance&quot;
+## 
+## $class
+##         s0 
+## 0.02487583 
+## attr(,&quot;measure&quot;)
+## [1] &quot;Misclassification Error&quot;
+## 
+## $auc
+## [1] 0.9929352
+## attr(,&quot;measure&quot;)
+## [1] &quot;AUC&quot;
+## 
+## $mse
+##         s0 
+## 0.03559113 
+## attr(,&quot;measure&quot;)
+## [1] &quot;Mean-Squared Error&quot;
+## 
+## $mae
+##         s0 
+## 0.07386506 
+## attr(,&quot;measure&quot;)
+## [1] &quot;Mean Absolute Error&quot;</code></pre>
+<pre class="r"><code>cnf_1se &lt;- confusion.glmnet(model_lasso_1se, newx = x[test, ], newy = y[test])
+print(cnf_1se)</code></pre>
+<pre><code>##          True
+## Predicted     N    Y Total
+##     N     21718  347 22065
+##     Y       244 1449  1693
+##     Total 21962 1796 23758
+## 
+##  Percent Correct:  0.9751</code></pre>
+</div>
+<div id="metrics-for-model-fitted-using-manually-chosen-lambda" class="section level2">
+<h2><span class="header-section-number">5.3</span> Metrics for model fitted using manually chosen lambda</h2>
 <pre class="r"><code>assess_check&lt;-assess.glmnet(model_lasso_check, newx=x[test,], newy = y[test])
 assess_check</code></pre>
 <pre><code>## $deviance
@@ -3155,8 +3219,9 @@ print(cnf_check)</code></pre>
 ##  Percent Correct:  0.9661</code></pre>
 </div>
 <div id="get-probabilities-for-test-set-using-fitted-models" class="section level2">
-<h2><span class="header-section-number">5.3</span> Get probabilities for test set using fitted models</h2>
-<p>To calculate the expected value of claims we use the probabilities generated by the models We then calculate the actual risk cost and compare it to the expected risk cost for the test set using the lambda chosen by cv</p>
+<h2><span class="header-section-number">5.4</span> Get probabilities for test set using fitted models</h2>
+<p>To calculate the expected value of claims we use the probabilities generated by the models We then calculate the actual risk cost and compare it to the expected risk cost for the test set using the different lambdas</p>
+<p>Using lambda.min</p>
 <pre class="r"><code>test_predictions&lt;-predict(model_lasso,type=&quot;response&quot;,s=bestlam_lasso,newx=x[test,])%&gt;%
   as_tibble()
 
@@ -3182,7 +3247,33 @@ A</code></pre>
 <pre class="r"><code>A/E</code></pre>
 <pre><code>## [1] 0.99783</code></pre>
 <pre class="r"><code>data.table:: fwrite(test_output,paste0(wd,&quot;/test_output.csv&quot;))</code></pre>
-<p>We then do the same using the second model fitted with larger lambda</p>
+<p>We then do the same using the model fitted with lambda.1se</p>
+<pre class="r"><code>test_predictions_1se&lt;-predict(model_lasso_1se,type=&quot;response&quot;,s=cv_lasso$lambda.1se,newx=x[test,])%&gt;%
+  as_tibble()
+
+names(test_predictions_1se)[1] &lt;- &quot;probabilty&quot;
+
+test_actuals&lt;-y[test]%&gt;%
+  as_tibble()
+
+names(test_actuals)[1] &lt;- &quot;actuals&quot;
+
+test_actuals&lt;-mutate(test_actuals,actuals=ifelse(test_actuals$actuals==&quot;Y&quot;,1,0))
+
+test_output_1se&lt;-cbind(x[test,],test_predictions_1se,test_actuals)%&gt;%
+  mutate(actual_risk_cost=actuals*sum.assured)%&gt;%
+  mutate(expected_risk_cost=probabilty*sum.assured)
+
+A&lt;-sum(test_output_1se$actual_risk_cost)
+E&lt;-sum(test_output_1se$expected_risk_cost)
+A</code></pre>
+<pre><code>## [1] 256882000</code></pre>
+<pre class="r"><code>E</code></pre>
+<pre><code>## [1] 257142265</code></pre>
+<pre class="r"><code>A/E</code></pre>
+<pre><code>## [1] 0.9989879</code></pre>
+<pre class="r"><code>data.table:: fwrite(test_output_1se,paste0(wd,&quot;/test_output_lambda_1se.csv&quot;))</code></pre>
+<p>We then do the same using the model fitted with manually chosen lambda</p>
 <pre class="r"><code>test_predictions_check&lt;-predict(model_lasso_check,type=&quot;response&quot;,s=checklambda,newx=x[test,])%&gt;%
   as_tibble()
 
@@ -3208,13 +3299,14 @@ A</code></pre>
 <pre class="r"><code>A/E</code></pre>
 <pre><code>## [1] 1.039395</code></pre>
 <pre class="r"><code>data.table:: fwrite(test_output_basic,paste0(wd,&quot;/test_output_larger_lambda.csv&quot;))</code></pre>
-<p>We can see that the model fitted using cross validation to choose lambda selects 12 out of the 15 variables. For the test set this model can predict the expected claims value to almost within 2% of the actual claims amount. The lambda coefficient chosen by cross validation is such that the deviance function is minimized. Some coefficients are shrunk to zero improving interpretability of the model.</p>
-<p>For the second model, where we deliberately chose the lambda tuning parameter to be high, fewer variables are selected. This model is obviously easier to interpret however the deviance function is higher.</p>
+<p>We can see that the model fitted using lambda.min selects all of the 15 variables. This lambda coefficient minimizes the deviance function.</p>
+<p>The model fitted using lambda.1se ensures that the deviance function is within one standard error of the minimum.Some coefficients are shrunk to zero improving interpretability of the model.</p>
+<p>For the last model we deliberately chose the lambda tuning parameter to be high and as a result fewer variables are selected. This model is obviously easier to interpret however the deviance function is higher.</p>
 <pre class="r"><code>end_time=Sys.time()
 
 tot_time=end_time-start_time
 tot_time</code></pre>
-<pre><code>## Time difference of 9.05293 mins</code></pre>
+<pre><code>## Time difference of 7.88375 mins</code></pre>
 <hr />
 </div>
 </div>
@@ -3269,8 +3361,8 @@ tot_time</code></pre>
 <li>LASSO modeling for mortality:
 <ul>
 <li>Gary Venter: <a href="http://www.garyventer.com/wp-content/uploads/2018/08/Venter-2018-Regularized-Age-Period-Cohort-Modeling-of-Opioid-Mortality-Rates-Preprint.pdf" class="uri">http://www.garyventer.com/wp-content/uploads/2018/08/Venter-2018-Regularized-Age-Period-Cohort-Modeling-of-Opioid-Mortality-Rates-Preprint.pdf</a></li>
-<li>glmnet package: <a href="https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf" class="uri">https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf</a></li>
 </ul></li>
+<li>glmnet package: <a href="https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf" class="uri">https://cran.r-project.org/web/packages/glmnet/vignettes/glmnet.pdf</a></li>
 </ul>
 <hr />
 </div>
