@@ -1,2 +1,2 @@
 # ml_demographics
-Simulated example of how Machine Learning can be used in demographic experience analysis
+Example of how LASSO can be used in a Life Insurance setting
